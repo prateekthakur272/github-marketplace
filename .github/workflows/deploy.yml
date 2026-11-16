@@ -28,7 +28,6 @@ jobs:
         env:
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
           NEXT_PUBLIC_APP_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || 'dev' }}
-          NEXT_PUBLIC_GITHUB_TOKEN: ${{ secrets.MARKETPLACE_TOKEN }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       # `out/404.html` is the app shell: GitHub Pages serves it for deep links
