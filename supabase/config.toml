@@ -1,0 +1,5 @@
+project_id = "qbioildsooaleskxlkgd"
+
+[functions.sync-github]
+# Called by pg_cron with a shared secret header (checked in the function).
+verify_jwt = false

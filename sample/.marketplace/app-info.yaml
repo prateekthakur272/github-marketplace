@@ -1,0 +1,66 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  .marketplace/app-info.yaml
+#
+#  Put the whole `.marketplace/` folder at the ROOT of your app's repository:
+#
+#    your-app/
+#    ├── .marketplace/
+#    │   ├── app-info.yaml      ← this file
+#    │   ├── app-icon.png       ← store icon (square PNG, 512×512 recommended)
+#    │   └── screenshots/       ← PNG / JPG / WEBP / GIF (first 5 by name are shown)
+#    │       ├── 01-home.png
+#    │       ├── 02-editor.png
+#    │       └── ...
+#    └── (your code)
+#
+#  The marketplace reads this live from GitHub (default branch) every time it
+#  opens, so changes appear as soon as you push. Every field is optional;
+#  anything you leave out falls back to the repo's GitHub name/description.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Name shown in the store (defaults to the repository name).
+name: Quick Download
+
+# One-line summary: shown under the name and in lists.
+tagline: Fast, tidy downloads for every platform.
+
+# Longer text for the "About this app" section. Plain text; blank lines make
+# new paragraphs.
+description: |
+  Quick Download keeps all your downloads in one place, with resumable
+  transfers, smart folders and a clean history you can search.
+
+  Works the same on every desktop and on Android, so your queue follows you.
+
+# Used for the Category filter on the "All Apps" page. Pick one, e.g.:
+# Productivity, Developer Tools, Utilities, Games, Education, Media, Social,
+# Finance, Health, Business, Other
+category: Utilities
+
+# Operating systems the app is built for. Allowed values:
+#   android, macos, windows, linux
+supported_os:
+  - android
+  - macos
+  - windows
+  - linux
+
+# Optional: minimum OS version per platform (shown as "Requires …").
+min_os:
+  android: "8.0"
+  macos: "12"
+  windows: "10"
+  linux: "Ubuntu 20.04"
+
+# Optional metadata
+developer: Your Name or Company
+license: MIT
+website: https://example.com/quick-download
+support_url: https://github.com/your-name/quick-download/issues
+privacy_policy: https://example.com/quick-download/privacy
+
+# Optional: keywords used for search and shown as chips.
+tags:
+  - downloads
+  - productivity
+  - cross-platform
