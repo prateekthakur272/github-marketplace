@@ -361,9 +361,13 @@ function ShellInner({ children }: { children: ReactNode }) {
   };
 
   // Scroll to top on navigation; "/" focuses search; Esc blurs it.
+  // On app detail pages, tab/filter changes only touch the query string, so keep
+  // the scroll position and scroll to top only when the path itself changes.
+  const isDetail = path.startsWith('/app/');
+  const scrollKey = isDetail ? path : `${path}?${sp.toString()}`;
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [path, sp]);
+  }, [scrollKey]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const el = document.activeElement as HTMLElement | null;
