@@ -23,6 +23,7 @@ query($login: String!, $after: String) {
         owner { avatarUrl }
         defaultBranchRef { name }
         repositoryTopics(first: 20) { nodes { topic { name } } }
+        primaryLanguage { name }
         releases(first: 10, orderBy: {field: CREATED_AT, direction: DESC}) {
           nodes {
             tagName name description isDraft isPrerelease publishedAt
@@ -195,6 +196,7 @@ function toRows(r: any) {
       html_url: r.url,
       // deno-lint-ignore no-explicit-any
       topics: r.repositoryTopics.nodes.map((t: any) => t.topic.name),
+      language: r.primaryLanguage?.name ?? null,
       owner: { avatar_url: r.owner.avatarUrl },
       default_branch: branch,
     },

@@ -51,6 +51,8 @@ export interface AppEntry {
   avatarUrl: string;
   repoUrl: string;
   topics: string[];
+  /** Primary language of the repo, if GitHub detected one. */
+  language?: string;
   info: MarketplaceInfo | null;
   /** Newest version first. */
   releases: ReleaseInfo[];
@@ -59,6 +61,13 @@ export interface AppEntry {
 export interface SocialAccount {
   provider: string;
   url: string;
+}
+
+export interface TopLanguage {
+  name: string;
+  color?: string;
+  /** Share of the owner's code, 0-100. */
+  percent: number;
 }
 
 export interface OwnerProfile {
@@ -73,6 +82,8 @@ export interface OwnerProfile {
   twitter?: string;
   /** From GitHub's social_accounts (LinkedIn, YouTube, Mastodon, ...). */
   socials: SocialAccount[];
+  /** From the synced profile's top_languages (largest first). */
+  topLanguages: TopLanguage[];
   followers: number;
   following: number;
   publicRepos: number;

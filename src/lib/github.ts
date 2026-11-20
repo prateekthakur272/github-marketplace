@@ -38,6 +38,8 @@ interface RawRepo {
   description?: string | null;
   html_url: string;
   topics?: string[];
+  /** Primary language name (REST: `language`). */
+  language?: string | null;
   owner: { avatar_url: string };
   default_branch?: string;
 }
@@ -99,6 +101,7 @@ export function buildApp(
     avatarUrl: repo.owner.avatar_url,
     repoUrl: repo.html_url,
     topics: repo.topics ?? [],
+    language: repo.language?.trim() || undefined,
     info: marketplace ? toMarketplaceInfo(marketplace) : null,
     releases,
   };
@@ -119,6 +122,7 @@ interface RawProfile {
   twitter_username?: string | null;
   /** REST-shaped: [{provider, url}] (GraphQL's socialAccounts is mapped to this). */
   social_accounts?: { provider?: string | null; url?: string | null }[] | null;
+  top_languages?: { name?: string | null; color?: string | null; percent?: number | null }[] | null;
   followers?: number;
   following?: number;
   public_repos?: number;
@@ -145,6 +149,11 @@ export function toProfile(j: RawProfile): OwnerProfile {
     socials: (j.social_accounts ?? []).flatMap((s) => {
       const url = clean(s?.url);
       return url ? [{ provider: (clean(s?.provider) ?? 'generic').toLowerCase(), url }] : [];
+    }),
+    topLanguages: (j.top_languages ?? []).flatMap((l) => {
+      const name = clean(l?.name);
+      const percent = Number(l?.percent);
+      return name && Number.isFinite(percent) && percent > 0 ? [{ name, color: clean(l?.color), percent }] : [];
     }),
     followers: j.followers ?? 0,
     following: j.following ?? 0,
@@ -175,6 +184,7 @@ query($login: String!) {
         owner { avatarUrl }
         defaultBranchRef { name }
         repositoryTopics(first: 20) { nodes { topic { name } } }
+        primaryLanguage { name }
         releases(first: 8, orderBy: {field: CREATED_AT, direction: DESC}) {
           nodes {
             tagName name description isDraft isPrerelease publishedAt
@@ -268,6 +278,7 @@ export function parseGraphql(body: any): Live {
         description: r.description,
         html_url: r.url,
         topics: r.repositoryTopics.nodes.map((t: any) => t.topic.name),
+        language: r.primaryLanguage?.name,
         owner: { avatar_url: r.owner.avatarUrl },
       },
       releases,

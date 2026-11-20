@@ -1,7 +1,7 @@
 'use client';
 
 import { Building2, CalendarDays, MapPin } from 'lucide-react';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { profileName, totalDownloads } from '@/lib/derived';
 import { formatCount } from '@/lib/format';
 import { homeUrl } from '@/lib/nav';
@@ -9,6 +9,8 @@ import { useRouter } from '@/lib/router';
 import type { AppEntry, OwnerProfile } from '@/lib/types';
 import { Socials } from './Socials';
 import { Panel } from './ui';
+
+const LANG_COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#ec4899', '#8b5cf6', '#06b6d4'];
 
 /** Counts up from 0 to `target` once (skipped for reduced motion). */
 function useCountUp(target: number | null, ms = 900) {
@@ -52,6 +54,14 @@ export function AboutMe({ profile: u, apps }: { profile: OwnerProfile; apps: App
   const router = useRouter();
   const downloads = apps ? apps.reduce((s, a) => s + totalDownloads(a), 0) : null;
   const since = u.createdAt?.getFullYear();
+  // Prefer the synced profile's top_languages (with GitHub colours); fall back to apps' primary languages.
+  const langs: { name: string; color?: string; percent: number }[] = useMemo(() => {
+    if (u.topLanguages.length > 0) return u.topLanguages.slice(0, 6);
+    const m = new Map<string, number>();
+    apps?.forEach((x) => x.language && m.set(x.language, (m.get(x.language) ?? 0) + 1));
+    const total = [...m.values()].reduce((x, y) => x + y, 0);
+    return [...m.entries()].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0])).slice(0, 6).map(([name, c]) => ({ name, percent: (c * 100) / total }));
+  }, [u.topLanguages, apps]);
   return (
     <Panel>
       <h2 className="about-title" style={{ marginBottom: 16 }}>About me</h2>
@@ -77,6 +87,25 @@ export function AboutMe({ profile: u, apps }: { profile: OwnerProfile; apps: App
         <Stat value={u.followers} label="Followers" href={`${u.htmlUrl}?tab=followers`} />
         <Stat value={u.publicRepos} label="Repos" href={`${u.htmlUrl}?tab=repositories`} />
       </div>
+      {langs.length > 0 && (
+        <div className="langs">
+          <div className="about-label">Top languages</div>
+          <div className="lang-bar" role="img" aria-label={langs.map((l) => `${l.name} ${Math.round(l.percent)}%`).join(', ')}>
+            {langs.map((l, i) => (
+              <span key={l.name} style={{ flex: l.percent, background: l.color ?? LANG_COLORS[i % LANG_COLORS.length] }} title={`${l.name} ${l.percent.toFixed(1)}%`} />
+            ))}
+          </div>
+          <div className="lang-list">
+            {langs.map((l, i) => (
+              <button key={l.name} className="lang" onClick={() => router.push(homeUrl({ platform: 'all', q: l.name }))}>
+                <i style={{ background: l.color ?? LANG_COLORS[i % LANG_COLORS.length] }} />
+                {l.name}
+                <span>{l.percent < 1 ? '<1' : Math.round(l.percent)}%</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <Socials profile={u} align="start" withGithub />
     </Panel>
   );
