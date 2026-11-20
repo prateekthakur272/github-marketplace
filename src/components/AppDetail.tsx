@@ -141,7 +141,7 @@ function Detail({ app, all }: { app: AppEntry; all: AppEntry[] }) {
           <FilterPill on={pre} onClick={() => router.push(url({ pre: !pre }))}>Pre-releases: {pre ? 'on' : 'off'}</FilterPill>
         </div>
         {hist.map((r, i) => (
-          <details className="rel" key={r.tag} open={i === 0}>
+          <details className="rel" key={`${r.tag}-${i}`} open={i === 0}>
             <summary>
               <div>
                 <span style={{ fontWeight: 700 }}>v{r.version ?? r.tag}</span>
@@ -162,7 +162,7 @@ function Detail({ app, all }: { app: AppEntry; all: AppEntry[] }) {
         {info?.description && (
           <>
             <h2 className="h2" style={{ marginBottom: 8 }}>About this app</h2>
-            <p style={{ lineHeight: 1.6, fontSize: 14, whiteSpace: 'pre-wrap', marginBottom: 26 }}>{info.description}</p>
+            <p style={{ lineHeight: 1.6, fontSize: 14, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', marginBottom: 26 }}>{info.description}</p>
           </>
         )}
         {picker}
@@ -176,8 +176,8 @@ function Detail({ app, all }: { app: AppEntry; all: AppEntry[] }) {
         {previous.length > 0 && (
           <>
             <h2 className="h2" style={{ margin: '26px 0 10px' }}>Previous versions</h2>
-            {previous.map((r) => (
-              <details className="rel" key={r.tag}>
+            {previous.map((r, i) => (
+              <details className="rel" key={`${r.tag}-${i}`}>
                 <summary>
                   <div>
                     <span style={{ fontWeight: 700 }}>v{r.version ?? r.tag}</span>

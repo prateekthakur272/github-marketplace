@@ -56,6 +56,11 @@ export interface AppEntry {
   releases: ReleaseInfo[];
 }
 
+export interface SocialAccount {
+  provider: string;
+  url: string;
+}
+
 export interface OwnerProfile {
   login: string;
   htmlUrl: string;
@@ -66,6 +71,8 @@ export interface OwnerProfile {
   location?: string;
   blog?: string;
   twitter?: string;
+  /** From GitHub's social_accounts (LinkedIn, YouTube, Mastodon, ...). */
+  socials: SocialAccount[];
   followers: number;
   following: number;
   publicRepos: number;

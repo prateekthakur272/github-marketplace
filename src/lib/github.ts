@@ -117,6 +117,8 @@ interface RawProfile {
   location?: string | null;
   blog?: string | null;
   twitter_username?: string | null;
+  /** REST-shaped: [{provider, url}] (GraphQL's socialAccounts is mapped to this). */
+  social_accounts?: { provider?: string | null; url?: string | null }[] | null;
   followers?: number;
   following?: number;
   public_repos?: number;
@@ -140,6 +142,10 @@ export function toProfile(j: RawProfile): OwnerProfile {
     location: clean(j.location),
     blog: clean(j.blog),
     twitter: clean(j.twitter_username),
+    socials: (j.social_accounts ?? []).flatMap((s) => {
+      const url = clean(s?.url);
+      return url ? [{ provider: (clean(s?.provider) ?? 'generic').toLowerCase(), url }] : [];
+    }),
     followers: j.followers ?? 0,
     following: j.following ?? 0,
     publicRepos: j.public_repos ?? 0,
@@ -159,6 +165,7 @@ const LIVE_QUERY = `
 query($login: String!) {
   user(login: $login) {
     login name avatarUrl url bio company location websiteUrl twitterUsername createdAt
+    socialAccounts(first: 10) { nodes { provider url } }
     followers { totalCount }
     following { totalCount }
     repositories(privacy: PUBLIC, isFork: false, first: 40, orderBy: {field: PUSHED_AT, direction: DESC}) {
@@ -208,6 +215,7 @@ export function parseGraphql(body: any): Live {
     location: user.location,
     blog: user.websiteUrl,
     twitter_username: user.twitterUsername,
+    social_accounts: user.socialAccounts?.nodes,
     followers: user.followers?.totalCount,
     following: user.following?.totalCount,
     public_repos: user.repositories?.totalCount,
@@ -483,7 +491,11 @@ export async function loadProfile(): Promise<OwnerProfile | null> {
     }
   }
   try {
-    return toProfile(await getJson(`/users/${OWNER}`));
+    const [user, socials] = await Promise.all([
+      getJson(`/users/${OWNER}`),
+      getJson(`/users/${OWNER}/social_accounts`).catch(() => []),
+    ]);
+    return toProfile({ ...user, social_accounts: socials });
   } catch {
     return null;
   }

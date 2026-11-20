@@ -3,29 +3,42 @@
 import { Download, LayoutGrid, MonitorSmartphone, SearchX, Sparkles, type LucideIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useData } from '@/lib/data';
-import { about, allTags, category, displayName, downloadsFor, latest, platformsOf, publishedMs, releaseDownloads, totalDownloads } from '@/lib/derived';
+import { about, allTags, category, displayName, profileName, downloadsFor, latest, platformsOf, publishedMs, releaseDownloads, totalDownloads } from '@/lib/derived';
 import { detectPlatform, formatCount, timeAgo } from '@/lib/format';
 import { homeUrl, platformFromQuery } from '@/lib/nav';
 import { appUrl } from '@/lib/nav';
 import { useRouter, useSearchParams } from '@/lib/router';
-import { PLATFORMS, PLATFORM_LABEL, type AppEntry } from '@/lib/types';
+import { PLATFORMS, PLATFORM_LABEL, type AppEntry, type OwnerProfile } from '@/lib/types';
 import { BarChartCard, BarRow, MonthChart } from './charts';
-import { Portfolio } from './Portfolio';
+import { MostDownloaded } from './Portfolio';
+import { AboutMe } from './AboutMe';
 import { AppRow, Btn, ErrorBox, FilterPill, LinkBtn, Pager, Panel, PLATFORM_ICON, SkeletonList, Tabs } from './ui';
 
 const PAGE_SIZE = 6;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-function Hero() {
+function Hero({ profile, apps }: { profile: OwnerProfile | null; apps: AppEntry[] | null }) {
   // Platform detection needs the browser: do it after mount (no SSR mismatch).
   const [mine, setMine] = useState<ReturnType<typeof detectPlatform>>(null);
   useEffect(() => setMine(detectPlatform()), []);
-  return (
+  const browse = (
+    <LinkBtn href={homeUrl({ platform: mine ?? 'all' })}>{mine ? `Browse ${PLATFORM_LABEL[mine]} apps` : 'Browse apps'}</LinkBtn>
+  );
+  const download = (
     <div className="hero">
       <h1>Download apps for every platform</h1>
       <p>Android, macOS, Windows and Linux builds, straight from GitHub Releases.</p>
-      <LinkBtn href={homeUrl({ platform: mine ?? 'all' })}>{mine ? `Browse ${PLATFORM_LABEL[mine]} apps` : 'Browse apps'}</LinkBtn>
+      {browse}
     </div>
+  );
+  if (!profile) return download;
+  return (
+    <>
+      {download}
+      <section style={{ marginTop: 32 }}>
+        <AboutMe profile={profile} apps={apps} />
+      </section>
+    </>
   );
 }
 
@@ -292,7 +305,7 @@ export function Home() {
     <>
       {landing && (
         <>
-          <Hero />
+          <Hero profile={profile} apps={apps} />
           <div style={{ height: 32 }} />
         </>
       )}
@@ -301,7 +314,7 @@ export function Home() {
       ) : landing ? (
         <>
           <Landing all={apps} />
-          <Portfolio profile={profile} apps={apps} />
+          <MostDownloaded apps={apps} />
         </>
       ) : (
         <Catalog all={apps} sp={sp} />

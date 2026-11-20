@@ -96,13 +96,13 @@ export function BarChartCard({
       <div style={{ fontSize: 17, fontWeight: 700 }}>{title}</div>
       <div className="muted" style={{ fontSize: 13, marginTop: 2 }}>{subtitle}</div>
       <div style={{ display: 'flex', height: 190, marginTop: 14 }}>
-        {items.map((it) => {
+        {items.map((it, i) => {
           const active = it === topItem || hover === it.label;
           const frac = Math.min(1, Math.max(0.08, it.value / maxV));
           const h = (190 - 8 - 15 - 26) * frac; // plot height minus label, as in the Flutter chart
           return (
             <button
-              key={it.label}
+              key={`${it.label}-${i}`}
               className="cbar"
               onClick={it.onClick}
               onMouseEnter={() => setHover(it.label)}

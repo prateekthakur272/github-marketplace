@@ -11,6 +11,7 @@ const QUERY = `
 query($login: String!, $after: String) {
   user(login: $login) {
     login name avatarUrl url bio company location websiteUrl twitterUsername createdAt
+    socialAccounts(first: 10) { nodes { provider url } }
     followers { totalCount }
     following { totalCount }
     repositories(privacy: PUBLIC, isFork: false, first: 20, after: $after,
@@ -260,6 +261,7 @@ Deno.serve(async (req) => {
         location: profile.location,
         blog: profile.websiteUrl,
         twitter_username: profile.twitterUsername,
+        social_accounts: profile.socialAccounts?.nodes ?? [],
         followers: profile.followers.totalCount,
         following: profile.following.totalCount,
         public_repos: profile.repositories.totalCount,

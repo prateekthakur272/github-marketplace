@@ -22,6 +22,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from '@/lib/router';
 import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import { config } from '@/lib/config';
+import { Socials } from './Socials';
 import { blogUrl } from '@/lib/github';
 import { useData, useTheme } from '@/lib/data';
 import { displayName, latest, profileName, publishedMs, totalDownloads } from '@/lib/derived';
@@ -277,6 +278,7 @@ export function ProfileCard() {
         <div><b>{formatCount(u.following)}</b><span>Following</span></div>
         <div><b>{formatCount(u.publicRepos)}</b><span>Repos</span></div>
       </div>
+      <Socials profile={u} />
       <a className="btn light sm" href={u.htmlUrl} target="_blank" rel="noopener noreferrer">
         View GitHub profile
       </a>
