@@ -30,18 +30,25 @@ export type RawInfo = Record<string, unknown>;
  */
 export function parseAppInfo(source: string): RawInfo | null {
   try {
-    const doc: unknown = parse(source);
-    if (!doc || typeof doc !== 'object' || Array.isArray(doc)) return null;
-    const info = { ...(doc as RawInfo) };
-    if (Object.keys(info).length === 0) return null;
-    info.supported_os = stringList(info.supported_os)
-      .map((o) => o.toLowerCase())
-      .filter((o) => asPlatform(o));
-    info.tags = stringList(info.tags);
-    return info;
+    return normalizeInfo(parse(source));
   } catch {
     return null;
   }
+}
+
+/**
+ * Normalises an already-parsed info object (what the sync function stores as
+ * `marketplace.info`). Idempotent, so it is safe on freshly parsed YAML too.
+ */
+export function normalizeInfo(doc: unknown): RawInfo | null {
+  if (!doc || typeof doc !== 'object' || Array.isArray(doc)) return null;
+  const info = { ...(doc as RawInfo) };
+  if (Object.keys(info).length === 0) return null;
+  info.supported_os = stringList(info.supported_os)
+    .map((o) => o.toLowerCase())
+    .filter((o) => asPlatform(o));
+  info.tags = stringList(info.tags);
+  return info;
 }
 
 function natural(a: string, b: string): number {

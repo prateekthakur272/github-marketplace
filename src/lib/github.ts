@@ -1,6 +1,6 @@
 import { classifyAsset } from './classify';
 import { config } from './config';
-import { parseAppInfo, pickScreenshots, toMarketplaceInfo, type RawInfo } from './info';
+import { normalizeInfo, parseAppInfo, pickScreenshots, toMarketplaceInfo, type RawInfo } from './info';
 import { compareReleases, parseVersion, versionString } from './version';
 import { publishedMs } from './derived';
 import type { AppEntry, AssetInfo, OwnerProfile, ReleaseInfo } from './types';
@@ -435,30 +435,33 @@ async function sb(query: string): Promise<any[]> {
   return res.json();
 }
 
+/**
+ * One `apps` table row -> AppEntry (null when it has no installable release).
+ * `marketplace` is `{info: {...parsed app-info.yaml}, icon_url, screenshots: [{name, download_url}]}`.
+ */
+export function appFromRow(r: any): AppEntry | null {
+  const mp = r.marketplace;
+  let marketplace: RawMarketplace | null = null;
+  if (mp) {
+    const shots = pickScreenshots(
+      ((mp.screenshots as any[]) ?? []).map((s) => ({
+        type: 'file',
+        name: s.name,
+        download_url: s.download_url,
+      })),
+    );
+    marketplace = {
+      info: mp.info ? normalizeInfo(mp.info) : null,
+      icon: mp.icon_url ?? null,
+      screenshots: shots,
+    };
+  }
+  return buildApp(r.repo, r.releases, marketplace);
+}
+
 async function loadSupabase(): Promise<AppEntry[]> {
   const rows = await sb('apps?select=repo,releases,marketplace');
-  const apps: AppEntry[] = [];
-  for (const r of rows) {
-    const mp = r.marketplace;
-    let marketplace: RawMarketplace | null = null;
-    if (mp) {
-      const shots = pickScreenshots(
-        ((mp.screenshots as any[]) ?? []).map((s) => ({
-          type: 'file',
-          name: s.name,
-          download_url: s.download_url,
-        })),
-      );
-      marketplace = {
-        info: typeof mp.info_text === 'string' ? parseAppInfo(mp.info_text) : null,
-        icon: mp.icon_url ?? null,
-        screenshots: shots,
-      };
-    }
-    const app = buildApp(r.repo, r.releases, marketplace);
-    if (app) apps.push(app);
-  }
-  return sortApps(apps);
+  return sortApps(rows.flatMap((r: any) => appFromRow(r) ?? []));
 }
 
 // ---------------------------------------------------------------- public
